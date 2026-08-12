@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ja" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>メモ管理アプリ</title>
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- タブアイコン (Favicon) の設定 -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23007bff'><path d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2zm0-4H7V7h10v2z'/></svg>"
+      type="image/svg+xml"
+    />
+
+    <!-- Google Material Symbols の読み込み -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    />
+  </head>
+  <body>
+    <div class="app-container">
+      <h1>メモ管理</h1>
+
+      <div class="action-bar">
+        <div class="left-actions">
+          <button class="btn btn-secondary" id="themeToggleBtn">
+            <span class="material-symbols-outlined" id="themeIcon"
+              >dark_mode</span
+            >
+            <span id="themeText">ダークモード</span>
+          </button>
+          <button class="icon-btn" id="exportAllBtn" title="全体エクスポート">
+            <span class="material-symbols-outlined">upload</span>
+          </button>
+          <button
+            class="icon-btn"
+            id="importAllBtn"
+            title="全体インポート(上書き)"
+          >
+            <span class="material-symbols-outlined">download</span>
+          </button>
+          <button class="icon-btn" id="manageGenresBtn" title="ジャンル設定">
+            <span class="material-symbols-outlined">category</span>
+          </button>
+          <input
+            type="file"
+            id="importAllInput"
+            accept=".json"
+            style="display: none"
+          />
+        </div>
+
+        <div class="right-actions">
+          <div class="filter-container">
+            <label for="genreFilter">表示:</label>
+            <select id="genreFilter" class="select-field">
+              <option value="ALL">すべて表示</option>
+            </select>
+          </div>
+          <button class="btn" id="addMemoBtn">
+            <span class="material-symbols-outlined">add</span>メモを追加
+          </button>
+        </div>
+      </div>
+
+      <ul class="section-list" id="sectionList"></ul>
+    </div>
+
+    <!-- ジャンル管理モーダル -->
+    <div class="modal" id="genreModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>ジャンルの事前登録管理</h2>
+          <button class="icon-btn" id="closeGenreModalBtn">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <ul class="genre-manage-list" id="genreManageList"></ul>
+        <div class="form-group">
+          <label>新しいジャンルを追加</label>
+          <div class="genre-custom-container">
+            <input
+              type="text"
+              id="newGenreModalInput"
+              class="input-field"
+              placeholder="ジャンル名"
+            />
+            <button class="btn" id="addGenreModalBtn">追加</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="./js/code.js"></script>
+  </body>
+</html>
