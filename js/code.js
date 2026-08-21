@@ -1,4 +1,3 @@
-
 const STORAGE_KEY_MEMOS = "memo_app_memos";
 const STORAGE_KEY_GENRES = "memo_app_genres";
 const STORAGE_KEY_PEOPLE = "memo_app_people";
@@ -1364,4 +1363,3 @@ initTheme();
 loadFromLocalStorage();
 updateGenreFilterOptions();
 render();
-
