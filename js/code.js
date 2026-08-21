@@ -20,6 +20,7 @@ const AUTO_CLOSE_EXCLUDE_TAGS = [
     "track",
     "wbr",
 ];
+
 const COMMON_HTML_TAGS = [
     "div",
     "span",
@@ -204,8 +205,7 @@ function render() {
     });
 
     if (filteredMemos.length === 0) {
-        sectionList.innerHTML =
-            '<div class="empty-message">該当するメモがありません。</div>';
+        sectionList.innerHTML = '<div class="empty-message">該当するメモがありません。</div>';
         return;
     }
 
@@ -217,10 +217,6 @@ function render() {
 
     if (typeof hljs !== "undefined") {
         hljs.highlightAll();
-        if (typeof hljs !== "undefined") {
-            hljs.highlightAll();
-        }
-
         // ここに追加: 描画後にコピーボタンを付与する
         attachCopyButtons();
     }
@@ -264,15 +260,15 @@ function renderPreviewContent(targetEl, memo) {
                     : formatDisplayTime(item.time);
 
             html += `
-              <div class="timeline-item">
+            <div class="timeline-item">
                 <div class="timeline-header-row">
-                  ${person ? `<img src="${person.avatar}" class="timeline-avatar">` : ""}
-                  <span class="timeline-person-name">${personName}</span>
-                  <span class="timeline-subtitle">[${subtitleText}]</span>
-                  <span class="timeline-time">${timeDisplay}</span>
+                    ${person ? `<img src="${person.avatar}" class="timeline-avatar">` : ""}
+                    <span class="timeline-person-name">${personName}</span>
+                    <span class="timeline-subtitle">[${subtitleText}]</span>
+                    <span class="timeline-time">${timeDisplay}</span>
                 </div>
                 ${detailText ? `<div class="timeline-content">${detailText.replace(/\n/g, "<br>")}</div>` : ""}
-              </div>
+            </div>
             `;
         });
         html += "</div>";
@@ -292,22 +288,22 @@ function updateHtmlPreview(containerEl, htmlContent) {
 
     // すべての要素のCSSをブラウザデフォルトにリセットし、親からのスタイル継承を遮断
     const resetStyle = `
-    <style>
-      :host {
-        display: block;
-        overflow-x: auto;
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        font-family: system-ui, -apple-system, sans-serif !important;
-        padding: 12px;
-        box-sizing: border-box;
-      }
-      *, *::before, *::after {
-        all: revert;
-        box-sizing: border-box;
-      }
-    </style>
-  `;
+        <style>
+            :host {
+                display: block;
+                overflow-x: auto;
+                background-color: #ffffff !important;
+                color: #000000 !important;
+                font-family: system-ui, -apple-system, sans-serif !important;
+                padding: 12px;
+                box-sizing: border-box;
+            }
+            *, *::before, *::after {
+                all: revert;
+                box-sizing: border-box;
+            }
+        </style>
+    `;
     shadow.innerHTML = resetStyle + cleanHtml;
 }
 
@@ -338,8 +334,7 @@ function setupHtmlEditorSuggest(textarea, previewEl, memo) {
             if (matches.length > 0 && query.length > 0) {
                 suggestBox.innerHTML = matches
                     .map(
-                        (m) =>
-                            `<div class="html-suggest-item" data-tag="${m}">&lt;${m}&gt;</div>`,
+                        (m) => `<div class="html-suggest-item" data-tag="${m}">&lt;${m}&gt;</div>`,
                     )
                     .join("");
                 suggestBox.style.display = "block";
@@ -383,79 +378,75 @@ function createMemoElement(memo, index) {
     li.draggable = !memo.isOpen;
     li.dataset.index = index;
 
-    const displayTitle =
-        memo.title.trim() !== "" ? memo.title : `${memo.genre} メモ`;
+    const displayTitle = memo.title.trim() !== "" ? memo.title : `${memo.genre} メモ`;
 
     let genreOptions = genres
         .map(
-            (g) =>
-                `<option value="${escapeHtml(g)}" ${memo.genre === g ? "selected" : ""}>${escapeHtml(g)}</option>`,
+            (g) => `<option value="${escapeHtml(g)}" ${memo.genre === g ? "selected" : ""}>${escapeHtml(g)}</option>`,
         )
         .join("");
 
     if (!genres.includes(memo.genre)) {
-        genreOptions =
-            `<option value="${escapeHtml(memo.genre)}" selected>${escapeHtml(memo.genre)}</option>` +
-            genreOptions;
+        genreOptions = `<option value="${escapeHtml(memo.genre)}" selected>${escapeHtml(memo.genre)}</option>` + genreOptions;
     }
 
     const memoTypeOptions = `
-          <option value="markdown" ${memo.memoType === "markdown" ? "selected" : ""}>マークダウン</option>
-          <option value="html" ${memo.memoType === "html" ? "selected" : ""}>HTML</option>
-          <option value="timeline" ${memo.memoType === "timeline" ? "selected" : ""}>時系列</option>
-        `;
+        <option value="markdown" ${memo.memoType === "markdown" ? "selected" : ""}>マークダウン</option>
+        <option value="html" ${memo.memoType === "html" ? "selected" : ""}>HTML</option>
+        <option value="timeline" ${memo.memoType === "timeline" ? "selected" : ""}>時系列</option>
+    `;
 
     li.innerHTML = `
-      <div class="section-header">
-        <div class="header-info-group">
-          <span class="drag-handle ${memo.isOpen ? "disabled" : ""}"><span class="material-symbols-outlined">drag_indicator</span></span>
-          <span class="genre-badge">${escapeHtml(memo.genre)}</span>
-          <span class="type-badge">${getMemoTypeLabel(memo.memoType)}</span>
-          <span class="title-display">${escapeHtml(displayTitle)}</span>
-        </div>
-        <div class="header-actions">
-          <button class="icon-btn export-item-btn" title="単体エクスポート">
-            <span class="material-symbols-outlined">upload</span>
-          </button>
-          <button class="icon-btn import-item-btn" title="単体インポート(置換)">
-            <span class="material-symbols-outlined">download</span>
-          </button>
-          <button class="icon-btn header-delete-btn" title="削除">
-            <span class="material-symbols-outlined">delete</span>
-          </button>
-          <input type="file" class="import-item-input" accept=".json" style="display: none;" />
-          <span class="material-symbols-outlined toggle-icon">expand_more</span>
-        </div>
-      </div>
-
-      <div class="gallery-summary-preview"></div>
-
-      <div class="section-content">
-        <div class="form-group">
-          <label>ジャンル</label>
-          <select class="select-field genre-select" style="width: 100%;">
-            ${genreOptions}
-          </select>
-          <div class="genre-custom-container custom-genre-wrapper" style="display: none;">
-            <input type="text" class="input-field custom-genre-input" placeholder="新しいジャンル名を入力" />
-            <button class="btn add-custom-genre-btn">追加</button>
-          </div>
+        <div class="section-header">
+            <div class="header-info-group">
+                <span class="drag-handle ${memo.isOpen ? "disabled" : ""}"><span class="material-symbols-outlined">drag_indicator</span></span>
+                <span class="genre-badge">${escapeHtml(memo.genre)}</span>
+                <span class="type-badge">${getMemoTypeLabel(memo.memoType)}</span>
+                <span class="title-display">${escapeHtml(displayTitle)}</span>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn export-item-btn" title="単体エクスポート">
+                    <span class="material-symbols-outlined">upload</span>
+                </button>
+                <button class="icon-btn import-item-btn" title="単体インポート(置換)">
+                    <span class="material-symbols-outlined">download</span>
+                </button>
+                <button class="icon-btn header-delete-btn" title="削除">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+                <input type="file" class="import-item-input" accept=".json" style="display: none;" />
+                <span class="material-symbols-outlined toggle-icon">expand_more</span>
+            </div>
         </div>
 
-        <div class="form-group">
-          <label>タイトル</label>
-          <input type="text" class="input-field title-input" placeholder="新しいメモ" value="${escapeHtml(memo.title)}">
-        </div>
+        <div class="gallery-summary-preview"></div>
 
-        <div class="form-group">
-          <label>メモの種類</label>
-          <select class="select-field memo-type-select" style="width: 100%;">
-            ${memoTypeOptions}
-          </select>
-        </div>
+        <div class="section-content">
+            <div class="form-group">
+                <label>ジャンル</label>
+                <select class="select-field genre-select" style="width: 100%;">
+                    ${genreOptions}
+                </select>
+                <div class="genre-custom-container custom-genre-wrapper" style="display: none;">
+                    <input type="text" class="input-field custom-genre-input" placeholder="新しいジャンル名を入力" />
+                    <button class="btn add-custom-genre-btn">追加</button>
+                </div>
+            </div>
 
-        <div class="memo-editor-container"></div>
-      </div>
+            <div class="form-group">
+                <label>タイトル</label>
+                <input type="text" class="input-field title-input" placeholder="新しいメモ" value="${escapeHtml(memo.title)}">
+            </div>
+
+            <div class="form-group">
+                <label>メモの種類</label>
+                <select class="select-field memo-type-select" style="width: 100%;">
+                    ${memoTypeOptions}
+                </select>
+            </div>
+
+            <div class="memo-editor-container"></div>
+        </div>
     `;
 
     const summaryPreviewEl = li.querySelector(".gallery-summary-preview");
@@ -466,62 +457,55 @@ function createMemoElement(memo, index) {
     if (memo.memoType === "html") {
         editorContainer.innerHTML = `
             <div class="form-group">
-              <label>HTML ソースコード</label>
-              <textarea class="textarea-field html-content-input">${escapeHtml(memo.content)}</textarea>
+                <label>HTML ソースコード</label>
+                <textarea class="textarea-field html-content-input">${escapeHtml(memo.content)}</textarea>
             </div>
             <div class="form-group">
-              <label>プレビュー</label>
-              <div class="html-preview-area"></div>
+                <label>プレビュー</label>
+                <div class="html-preview-area"></div>
             </div>
-          `;
-
-        const htmlInput = editorContainer.querySelector(
-            ".html-content-input",
-        );
-        const htmlPreview =
-            editorContainer.querySelector(".html-preview-area");
+        `;
+        const htmlInput = editorContainer.querySelector(".html-content-input");
+        const htmlPreview = editorContainer.querySelector(".html-preview-area");
         updateHtmlPreview(htmlPreview, memo.content);
         setupHtmlEditorSuggest(htmlInput, htmlPreview, memo);
+
     } else if (memo.memoType === "timeline") {
         let personOptions =
             '<option value="">(人物名なし)</option>' +
             people
-                .map(
-                    (p) => `<option value="${p.id}">${escapeHtml(p.name)}</option>`,
-                )
+                .map((p) => `<option value="${p.id}">${escapeHtml(p.name)}</option>`)
                 .join("");
 
         editorContainer.innerHTML = `
             <div class="form-group">
-              <label>出来事登録 (人物名 : サブタイトル : 日時) ＋ 出来事(詳細情報)</label>
-              <div class="timeline-editor">
-                <div class="timeline-input-row">
-                  <select class="select-field tl-person-select" style="max-width:140px;" title="人物名">
-                    ${personOptions}
-                  </select>
-                  <input type="text" class="input-field tl-subtitle-input" placeholder="サブタイトル" style="flex: 1; min-width:120px;">
-                  <select class="select-field tl-timemode-select">
-                    <option value="exact">日時指定</option>
-                    <option value="uncertain">日時不明確</option>
-                  </select>
-                  <input type="datetime-local" class="input-field tl-time-input" style="max-width:200px;">
+                <label>出来事登録 (人物名 : サブタイトル : 日時) ＋ 出来事(詳細情報)</label>
+                <div class="timeline-editor">
+                    <div class="timeline-input-row">
+                        <select class="select-field tl-person-select" style="max-width:140px;" title="人物名">
+                            ${personOptions}
+                        </select>
+                        <input type="text" class="input-field tl-subtitle-input" placeholder="サブタイトル" style="flex: 1; min-width:120px;">
+                        <select class="select-field tl-timemode-select">
+                            <option value="exact">日時指定</option>
+                            <option value="uncertain">日時不明確</option>
+                        </select>
+                        <input type="datetime-local" class="input-field tl-time-input" style="max-width:200px;">
+                    </div>
+                    <textarea class="textarea-field tl-detail-input" placeholder="出来事（詳細情報）を入力" style="height: 60px;"></textarea>
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button class="btn add-tl-item-btn"><span class="material-symbols-outlined">add</span>出来事を追加</button>
+                    </div>
                 </div>
-                <textarea class="textarea-field tl-detail-input" placeholder="出来事（詳細情報）を入力" style="height: 60px;"></textarea>
-                <div style="display:flex; justify-content:flex-end;">
-                  <button class="btn add-tl-item-btn"><span class="material-symbols-outlined">add</span>出来事を追加</button>
-                </div>
-              </div>
             </div>
             <div class="form-group">
-              <label>時系列（ドラッグ＆ドロップで並び替え可能）</label>
-              <div class="timeline-preview-area"></div>
+                <label>時系列（ドラッグ＆ドロップで並び替え可能）</label>
+                <div class="timeline-preview-area"></div>
             </div>
-          `;
+        `;
 
         const renderTimelineItems = () => {
-            const previewArea = editorContainer.querySelector(
-                ".timeline-preview-area",
-            );
+            const previewArea = editorContainer.querySelector(".timeline-preview-area");
             if (!memo.timelineData || memo.timelineData.length === 0) {
                 previewArea.innerHTML = "<em>出来事が登録されていません。</em>";
                 return;
@@ -530,9 +514,7 @@ function createMemoElement(memo, index) {
             let html = '<div class="timeline-container">';
             memo.timelineData.forEach((item, idx) => {
                 const person = people.find((p) => p.id === item.personId);
-                const personName = person
-                    ? escapeHtml(person.name)
-                    : "人物名なし";
+                const personName = person ? escapeHtml(person.name) : "人物名なし";
                 const subtitleText =
                     item.subtitle && item.subtitle.trim() !== ""
                         ? escapeHtml(item.subtitle)
@@ -548,35 +530,33 @@ function createMemoElement(memo, index) {
 
                 html += `
                 <div class="timeline-item" draggable="true" data-tl-idx="${idx}">
-                  <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div class="timeline-header-row">
-                      <span class="drag-handle"><span class="material-symbols-outlined icon-small">drag_indicator</span></span>
-                      ${person ? `<img src="${person.avatar}" class="timeline-avatar">` : ""}
-                      <span class="timeline-person-name">${personName}</span>
-                      <span class="timeline-subtitle">[${subtitleText}]</span>
-                      <span class="timeline-time">${timeDisplay}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="timeline-header-row">
+                            <span class="drag-handle"><span class="material-symbols-outlined icon-small">drag_indicator</span></span>
+                            ${person ? `<img src="${person.avatar}" class="timeline-avatar">` : ""}
+                            <span class="timeline-person-name">${personName}</span>
+                            <span class="timeline-subtitle">[${subtitleText}]</span>
+                            <span class="timeline-time">${timeDisplay}</span>
+                        </div>
+                        <button class="icon-btn delete-tl-item-btn" data-tl-idx="${idx}" title="削除">
+                            <span class="material-symbols-outlined icon-small">delete</span>
+                        </button>
                     </div>
-                    <button class="icon-btn delete-tl-item-btn" data-tl-idx="${idx}" title="削除">
-                      <span class="material-symbols-outlined icon-small">delete</span>
-                    </button>
-                  </div>
-                  ${detailText ? `<div class="timeline-content">${escapeHtml(detailText).replace(/\n/g, "<br>")}</div>` : ""}
+                    ${detailText ? `<div class="timeline-content">${escapeHtml(detailText).replace(/\n/g, "<br>")}</div>` : ""}
                 </div>
-              `;
+                `;
             });
             html += "</div>";
             previewArea.innerHTML = html;
 
-            previewArea
-                .querySelectorAll(".delete-tl-item-btn")
-                .forEach((btn) => {
-                    btn.addEventListener("click", (e) => {
-                        const targetIdx = parseInt(e.currentTarget.dataset.tlIdx);
-                        memo.timelineData.splice(targetIdx, 1);
-                        saveToLocalStorage();
-                        renderTimelineItems();
-                    });
+            previewArea.querySelectorAll(".delete-tl-item-btn").forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    const targetIdx = parseInt(e.currentTarget.dataset.tlIdx);
+                    memo.timelineData.splice(targetIdx, 1);
+                    saveToLocalStorage();
+                    renderTimelineItems();
                 });
+            });
 
             let tlDraggedIdx = null;
             let tlDropInsertPos = null;
@@ -652,13 +632,9 @@ function createMemoElement(memo, index) {
         renderTimelineItems();
 
         const addTlBtn = editorContainer.querySelector(".add-tl-item-btn");
-        const personSelect =
-            editorContainer.querySelector(".tl-person-select");
-        const subtitleInput =
-            editorContainer.querySelector(".tl-subtitle-input");
-        const timeModeSelect = editorContainer.querySelector(
-            ".tl-timemode-select",
-        );
+        const personSelect = editorContainer.querySelector(".tl-person-select");
+        const subtitleInput = editorContainer.querySelector(".tl-subtitle-input");
+        const timeModeSelect = editorContainer.querySelector(".tl-timemode-select");
         const timeInput = editorContainer.querySelector(".tl-time-input");
         const detailInput = editorContainer.querySelector(".tl-detail-input");
 
@@ -695,19 +671,19 @@ function createMemoElement(memo, index) {
             timeInput.value = getCurrentDateTimeLocal();
             renderTimelineItems();
         });
+
     } else {
         editorContainer.innerHTML = `
             <div class="toolbar">
-              <label>本文</label>
-              <div class="toggle-container">
-                <input type="checkbox" id="mdToggle-${memo.id}" class="md-toggle" ${memo.isMd ? "checked" : ""}>
-                <label for="mdToggle-${memo.id}">Markdown表示</label>
-              </div>
+                <label>本文</label>
+                <div class="toggle-container">
+                    <input type="checkbox" id="mdToggle-${memo.id}" class="md-toggle" ${memo.isMd ? "checked" : ""}>
+                    <label for="mdToggle-${memo.id}">Markdown表示</label>
+                </div>
             </div>
 
-            ${!memo.isMd
-                ? `
-              <div class="md-guide-bar">
+            ${!memo.isMd ? `
+            <div class="md-guide-bar">
                 <button class="md-guide-btn" data-prefix="# " data-block="true">H1</button>
                 <button class="md-guide-btn" data-prefix="## " data-block="true">H2</button>
                 <button class="md-guide-btn" data-prefix="### " data-block="true">H3</button>
@@ -718,22 +694,19 @@ function createMemoElement(memo, index) {
                 <button class="md-guide-btn" data-wrapper="\`"><span class="material-symbols-outlined icon-small">code</span></button>
                 <button class="md-guide-btn" data-link="true"><span class="material-symbols-outlined icon-small">link</span></button>
                 <button class="md-guide-btn" data-table="true"><span class="material-symbols-outlined icon-small">table_chart</span></button>
-              </div>
-            `
-                : ""
-            }
+            </div>
+            ` : ""}
 
             <div class="form-group">
-              ${memo.isMd
+                ${memo.isMd
                 ? `<div class="md-preview">${parseMarkdown(memo.content)}</div>`
                 : `<textarea class="textarea-field content-input">${escapeHtml(memo.content)}</textarea>`
             }
             </div>
-          `;
+        `;
 
         if (!memo.isMd) {
-            const contentInput =
-                editorContainer.querySelector(".content-input");
+            const contentInput = editorContainer.querySelector(".content-input");
             contentInput.addEventListener("input", (e) => {
                 memo.content = e.target.value;
                 saveToLocalStorage();
@@ -749,11 +722,9 @@ function createMemoElement(memo, index) {
 
                     let inserted = "";
                     const isBlock = btn.dataset.block === "true";
-                    const hasTextBefore =
-                        start > 0 && text.charAt(start - 1) !== "\n";
+                    const hasTextBefore = start > 0 && text.charAt(start - 1) !== "\n";
                     const prefixStr = btn.dataset.prefix || "";
-                    const prefix =
-                        (isBlock && hasTextBefore ? "\n" : "") + prefixStr;
+                    const prefix = (isBlock && hasTextBefore ? "\n" : "") + prefixStr;
 
                     if (btn.dataset.prefix) {
                         inserted = `${prefix}${selected}`;
@@ -768,8 +739,7 @@ function createMemoElement(memo, index) {
                             "| ヘッダー1 | ヘッダー2 |\n| --- | --- |\n| 内容1 | 内容2 |";
                     }
 
-                    contentInput.value =
-                        text.substring(0, start) + inserted + text.substring(end);
+                    contentInput.value = text.substring(0, start) + inserted + text.substring(end);
                     memo.content = contentInput.value;
                     saveToLocalStorage();
                     contentInput.focus();
@@ -875,10 +845,7 @@ function createMemoElement(memo, index) {
     memoTypeSelect.addEventListener("change", (e) => {
         memo.memoType = e.target.value;
         memo.isMd = false;
-        if (
-            memo.memoType === "timeline" &&
-            !Array.isArray(memo.timelineData)
-        ) {
+        if (memo.memoType === "timeline" && !Array.isArray(memo.timelineData)) {
             memo.timelineData = [];
         }
         saveToLocalStorage();
@@ -907,10 +874,7 @@ function createMemoElement(memo, index) {
                 const importedData = JSON.parse(event.target.result);
                 if (importedData && typeof importedData === "object") {
                     memos[index] = { ...importedData, id: memo.id };
-                    if (
-                        importedData.genre &&
-                        !genres.includes(importedData.genre)
-                    ) {
+                    if (importedData.genre && !genres.includes(importedData.genre)) {
                         genres.unshift(importedData.genre);
                     }
                     saveToLocalStorage();
@@ -933,8 +897,7 @@ function createMemoElement(memo, index) {
     const titleInput = li.querySelector(".title-input");
     titleInput.addEventListener("input", (e) => {
         memo.title = e.target.value;
-        const updatedTitle =
-            memo.title.trim() !== "" ? memo.title : `${memo.genre} メモ`;
+        const updatedTitle = memo.title.trim() !== "" ? memo.title : `${memo.genre} メモ`;
         li.querySelector(".title-display").textContent = updatedTitle;
         saveToLocalStorage();
     });
@@ -1019,10 +982,8 @@ importAllInput.addEventListener("change", (e) => {
                 Array.isArray(importedData.memos)
             ) {
                 memos = importedData.memos;
-                if (Array.isArray(importedData.genres))
-                    genres = importedData.genres;
-                if (Array.isArray(importedData.people))
-                    people = importedData.people;
+                if (Array.isArray(importedData.genres)) genres = importedData.genres;
+                if (Array.isArray(importedData.people)) people = importedData.people;
             }
             saveToLocalStorage();
             updateGenreFilterOptions();
@@ -1041,8 +1002,7 @@ const themeText = document.getElementById("themeText");
 function setTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
     themeIcon.textContent = theme === "dark" ? "light_mode" : "dark_mode";
-    themeText.textContent =
-        theme === "dark" ? "ライトモード" : "ダークモード";
+    themeText.textContent = theme === "dark" ? "ライトモード" : "ダークモード";
     localStorage.setItem(STORAGE_KEY_THEME, theme);
 }
 
@@ -1052,8 +1012,7 @@ function initTheme() {
 }
 
 themeToggleBtn.addEventListener("click", () => {
-    const currentTheme =
-        document.documentElement.getAttribute("data-theme");
+    const currentTheme = document.documentElement.getAttribute("data-theme");
     const nextTheme = currentTheme === "dark" ? "light" : "dark";
     setTheme(nextTheme);
 });
@@ -1083,9 +1042,9 @@ function renderGenreManageList() {
         li.innerHTML = `
             <span>${escapeHtml(g)} <small class="genre-in-use">${noteText}</small></span>
             <button class="icon-btn delete-genre-btn" ${isDisabled ? "disabled style='opacity:0.3;cursor:not-allowed;'" : ""}>
-              <span class="material-symbols-outlined">delete</span>
+                <span class="material-symbols-outlined">delete</span>
             </button>
-          `;
+        `;
 
         const delBtn = li.querySelector(".delete-genre-btn");
         if (!isDisabled) {
@@ -1136,9 +1095,7 @@ addGenreModalBtn.addEventListener("click", () => {
 // 人物管理モーダル制御
 const personModal = document.getElementById("personModal");
 const managePeopleBtn = document.getElementById("managePeopleBtn");
-const closePersonModalBtn = document.getElementById(
-    "closePersonModalBtn",
-);
+const closePersonModalBtn = document.getElementById("closePersonModalBtn");
 const personManageList = document.getElementById("personManageList");
 const newPersonNameInput = document.getElementById("newPersonNameInput");
 const newPersonImgInput = document.getElementById("newPersonImgInput");
@@ -1160,23 +1117,20 @@ function renderPersonManageList() {
         li.className = "person-manage-item";
         li.innerHTML = `
             <div class="person-item-left">
-              <img src="${p.avatar}" class="timeline-avatar" />
-              <span>${escapeHtml(p.name)}</span>
+                <img src="${p.avatar}" class="timeline-avatar" />
+                <span>${escapeHtml(p.name)}</span>
             </div>
             <button class="icon-btn delete-person-btn">
-              <span class="material-symbols-outlined">delete</span>
+                <span class="material-symbols-outlined">delete</span>
             </button>
-          `;
+        `;
 
-        li.querySelector(".delete-person-btn").addEventListener(
-            "click",
-            () => {
-                people.splice(idx, 1);
-                saveToLocalStorage();
-                renderPersonManageList();
-                render();
-            },
-        );
+        li.querySelector(".delete-person-btn").addEventListener("click", () => {
+            people.splice(idx, 1);
+            saveToLocalStorage();
+            renderPersonManageList();
+            render();
+        });
 
         personManageList.appendChild(li);
     });
@@ -1209,9 +1163,7 @@ const handleAddPerson = () => {
         people.push({
             id: Date.now().toString(),
             name,
-            avatar:
-                avatarData ||
-                "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23777'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>",
+            avatar: avatarData || "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23777'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>",
         });
         saveToLocalStorage();
         newPersonNameInput.value = "";
@@ -1324,34 +1276,28 @@ function parseMarkdown(text) {
     if (!text) return "<em>(内容がありません)</em>";
 
     let html = escapeHtml(text);
-
     const codeBlocks = [];
+
     html = html.replace(
         /```(\w*)\n([\s\S]*?)```/gim,
         (match, lang, code) => {
             const langClass = lang ? `class="language-${lang.trim()}"` : "";
             codeBlocks.push(
-                `<pre><code ${langClass}>${code.trim()}</code></pre>`,
+                `<pre><code ${langClass}>${code.trim()}</code></pre>`
             );
             return `__CODEBLOCK_${codeBlocks.length - 1}__`;
         },
     );
 
-    // テーブル変換ロジックの拡張
+    // テーブル変換ロジック
     html = html.replace(/(?:(?:^|\n)\|[^\n]+\|\r?)+/g, (match) => {
         const lines = match.trim().split("\n");
         if (lines.length < 2) return match;
 
-        // 1. 各行をセルデータに分割
         const matrix = lines.map((line) =>
-            line
-                .trim()
-                .replace(/^\||\|$/g, "")
-                .split("|")
-                .map((cell) => cell.trim())
+            line.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim())
         );
 
-        // 2. 2行目が区切り行（:---:, :---, ---: 等）かどうか判定し、アラインメントを取得
         let aligns = [];
         let hasSeparator = false;
         if (matrix.length > 1) {
@@ -1365,24 +1311,15 @@ function parseMarkdown(text) {
                     if (left) return ' style="text-align: left;"';
                     return "";
                 });
-                // 区切り行を除去
                 matrix.splice(1, 1);
             }
         }
 
-        // 3. セルデータ構造の生成
         const grid = matrix.map((row) =>
-            row.map((cell) => ({
-                text: cell,
-                rowspan: 1,
-                colspan: 1,
-                skip: false,
-            }))
+            row.map((cell) => ({ text: cell, rowspan: 1, colspan: 1, skip: false }))
         );
-
         const rowCount = grid.length;
 
-        // 4-1. 上方向への結合 (^) の解析処理
         for (let r = 0; r < rowCount; r++) {
             for (let c = 0; c < grid[r].length; c++) {
                 if (grid[r][c].text === "^" && r > 0) {
@@ -1398,7 +1335,6 @@ function parseMarkdown(text) {
             }
         }
 
-        // 4-2. 左方向への結合 (<) の解析処理 (エスケープ文字を考慮)
         for (let r = 0; r < rowCount; r++) {
             for (let c = 1; c < grid[r].length; c++) {
                 if (grid[r][c].text === "<" || grid[r][c].text === "&lt;") {
@@ -1414,7 +1350,6 @@ function parseMarkdown(text) {
             }
         }
 
-        // 4-3. 右方向への結合 (>) の解析処理 (エスケープ文字を考慮)
         for (let r = 0; r < rowCount; r++) {
             for (let c = grid[r].length - 2; c >= 0; c--) {
                 if (grid[r][c].text === ">" || grid[r][c].text === "&gt;") {
@@ -1430,18 +1365,15 @@ function parseMarkdown(text) {
             }
         }
 
-        // 5. HTML文字列の組み立て
         let tableHtml = "<table>";
         grid.forEach((row, rIdx) => {
             const tag = rIdx === 0 ? "th" : "td";
             tableHtml += "<tr>";
             row.forEach((cell, cIdx) => {
                 if (cell.skip) return;
-
                 const alignAttr = aligns[cIdx] || "";
                 const rowspanAttr = cell.rowspan > 1 ? ` rowspan="${cell.rowspan}"` : "";
                 const colspanAttr = cell.colspan > 1 ? ` colspan="${cell.colspan}"` : "";
-
                 tableHtml += `<${tag}${alignAttr}${rowspanAttr}${colspanAttr}>${cell.text}</${tag}>`;
             });
             tableHtml += "</tr>";
@@ -1459,10 +1391,7 @@ function parseMarkdown(text) {
         .replace(/^\> (.*$)/gim, "<blockquote>$1</blockquote>")
         .replace(/^\- (.*$)/gim, "<ul><li>$1</li></ul>")
         .replace(/`([^`]+)`/gim, "<code>$1</code>")
-        .replace(
-            /\[([^\]]+)\]\(([^)]+)\)/gim,
-            '<a href="$2" target="_blank">$1</a>',
-        )
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank">$1</a>')
         .replace(/\n/g, "<br>");
 
     codeBlocks.forEach((block, idx) => {
