@@ -55,6 +55,42 @@ const genreFilter = document.getElementById("genreFilter");
 const viewModeToggleBtn = document.getElementById("viewModeToggleBtn");
 const viewModeIcon = document.getElementById("viewModeIcon");
 
+// DOMContentLoadedは削除または空にして構いません
+document.addEventListener("DOMContentLoaded", () => {
+    // 既存の処理があれば残しますが、コピーボタン処理は削除します
+});
+
+// コピーボタン付与処理を独立した関数として定義
+function attachCopyButtons() {
+    const codeBlocks = document.querySelectorAll("pre");
+
+    codeBlocks.forEach((block) => {
+        // 既にボタンが追加されている場合はスキップ
+        if (block.querySelector(".copy-button")) return;
+
+        const button = document.createElement("button");
+        button.innerText = "Copy";
+        button.className = "copy-button";
+
+        button.addEventListener("click", async () => {
+            const code = block.querySelector("code");
+            const textToCopy = code ? code.innerText : block.innerText;
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                button.innerText = "Copied!";
+                setTimeout(() => {
+                    button.innerText = "Copy";
+                }, 2000);
+            } catch (err) {
+                console.error("コピーに失敗しました", err);
+            }
+        });
+
+        block.appendChild(button);
+    });
+}
+
 function saveToLocalStorage() {
     localStorage.setItem(STORAGE_KEY_MEMOS, JSON.stringify(memos));
     localStorage.setItem(STORAGE_KEY_GENRES, JSON.stringify(genres));
@@ -181,6 +217,12 @@ function render() {
 
     if (typeof hljs !== "undefined") {
         hljs.highlightAll();
+        if (typeof hljs !== "undefined") {
+            hljs.highlightAll();
+        }
+
+        // ここに追加: 描画後にコピーボタンを付与する
+        attachCopyButtons();
     }
 }
 
@@ -1295,23 +1337,112 @@ function parseMarkdown(text) {
         },
     );
 
+    // テーブル変換ロジックの拡張
     html = html.replace(/(?:(?:^|\n)\|[^\n]+\|\r?)+/g, (match) => {
         const lines = match.trim().split("\n");
         if (lines.length < 2) return match;
 
-        let tableHtml = "<table>";
-        lines.forEach((line, idx) => {
-            if (/^\|(?:\s*:-*:?\s*\|)+$/.test(line.trim())) return;
-
-            const cells = line
+        // 1. 各行をセルデータに分割
+        const matrix = lines.map((line) =>
+            line
                 .trim()
                 .replace(/^\||\|$/g, "")
-                .split("|");
-            const tag = idx === 0 ? "th" : "td";
+                .split("|")
+                .map((cell) => cell.trim())
+        );
 
+        // 2. 2行目が区切り行（:---:, :---, ---: 等）かどうか判定し、アラインメントを取得
+        let aligns = [];
+        let hasSeparator = false;
+        if (matrix.length > 1) {
+            hasSeparator = matrix[1].every((cell) => /^:?-+:?$/.test(cell));
+            if (hasSeparator) {
+                aligns = matrix[1].map((cell) => {
+                    const left = cell.startsWith(":");
+                    const right = cell.endsWith(":");
+                    if (left && right) return ' style="text-align: center;"';
+                    if (right) return ' style="text-align: right;"';
+                    if (left) return ' style="text-align: left;"';
+                    return "";
+                });
+                // 区切り行を除去
+                matrix.splice(1, 1);
+            }
+        }
+
+        // 3. セルデータ構造の生成
+        const grid = matrix.map((row) =>
+            row.map((cell) => ({
+                text: cell,
+                rowspan: 1,
+                colspan: 1,
+                skip: false,
+            }))
+        );
+
+        const rowCount = grid.length;
+
+        // 4-1. 上方向への結合 (^) の解析処理
+        for (let r = 0; r < rowCount; r++) {
+            for (let c = 0; c < grid[r].length; c++) {
+                if (grid[r][c].text === "^" && r > 0) {
+                    let targetR = r - 1;
+                    while (targetR >= 0 && grid[targetR][c].skip) {
+                        targetR--;
+                    }
+                    if (targetR >= 0) {
+                        grid[targetR][c].rowspan += grid[r][c].rowspan;
+                        grid[r][c].skip = true;
+                    }
+                }
+            }
+        }
+
+        // 4-2. 左方向への結合 (<) の解析処理 (エスケープ文字を考慮)
+        for (let r = 0; r < rowCount; r++) {
+            for (let c = 1; c < grid[r].length; c++) {
+                if (grid[r][c].text === "<" || grid[r][c].text === "&lt;") {
+                    let targetC = c - 1;
+                    while (targetC >= 0 && grid[r][targetC].skip) {
+                        targetC--;
+                    }
+                    if (targetC >= 0) {
+                        grid[r][targetC].colspan += grid[r][c].colspan;
+                        grid[r][c].skip = true;
+                    }
+                }
+            }
+        }
+
+        // 4-3. 右方向への結合 (>) の解析処理 (エスケープ文字を考慮)
+        for (let r = 0; r < rowCount; r++) {
+            for (let c = grid[r].length - 2; c >= 0; c--) {
+                if (grid[r][c].text === ">" || grid[r][c].text === "&gt;") {
+                    let targetC = c + 1;
+                    while (targetC < grid[r].length && grid[r][targetC].skip) {
+                        targetC++;
+                    }
+                    if (targetC < grid[r].length) {
+                        grid[r][targetC].colspan += grid[r][c].colspan;
+                        grid[r][c].skip = true;
+                    }
+                }
+            }
+        }
+
+        // 5. HTML文字列の組み立て
+        let tableHtml = "<table>";
+        grid.forEach((row, rIdx) => {
+            const tag = rIdx === 0 ? "th" : "td";
             tableHtml += "<tr>";
-            cells.forEach((cell) => {
-                tableHtml += `<${tag}>${cell.trim()}</${tag}>`;
+            row.forEach((cell, cIdx) => {
+                if (cell.skip) return;
+
+                const alignAttr = aligns[cIdx] || "";
+                const rowspanAttr = cell.rowspan > 1 ? ` rowspan="${cell.rowspan}"` : "";
+                const colspanAttr = cell.colspan > 1 ? ` colspan="${cell.colspan}"` : "";
+
+                tableHtml += `<${tag}${alignAttr}${rowspanAttr}${colspanAttr}>${cell.text}</${tag}>`;
             });
             tableHtml += "</tr>";
         });
@@ -1321,7 +1452,7 @@ function parseMarkdown(text) {
 
     html = html
         .replace(/^### (.*$)/gim, "<h3>$1</h3>")
-        .replace(/^## (.*$)/gim, "<h2>$2</h2>")
+        .replace(/^## (.*$)/gim, "<h2>$1</h2>")
         .replace(/^# (.*$)/gim, "<h1>$1</h1>")
         .replace(/\*\*(.*)\*\*/gim, "<b>$1</b>")
         .replace(/\*(.*)\*/gim, "<i>$1</i>")
